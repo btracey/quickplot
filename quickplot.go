@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"code.google.com/p/plotinum/plotter"
+	"github.com/btracey/myplot"
 	"github.com/gonum/floats"
 	"github.com/gonum/matrix/mat64"
 )
@@ -32,7 +33,7 @@ func ScatterFromColumns(data *mat64.Dense, x, y int) (*plotter.Scatter, error) {
 // at min and max cdf in case there are extreme outliers
 func CDF(data, weights []float64, min, max float64) *plotter.Line {
 	if !sort.Float64sAreSorted(data) {
-		painc("quickplot: data not sorted")
+		panic("quickplot: data not sorted")
 	}
 
 	if weights == nil {
@@ -48,7 +49,7 @@ func CDF(data, weights []float64, min, max float64) *plotter.Line {
 	cumsum := make([]float64, len(data))
 
 	floats.CumSum(cumsum, weights)
-	floats.Scale(cumsum[len[cumsum]-1], cumsum)
+	floats.Scale(cumsum[len(cumsum)-1], cumsum)
 
 	pts := make(plotter.XYs, len(data))
 	for i := range pts {
@@ -60,4 +61,33 @@ func CDF(data, weights []float64, min, max float64) *plotter.Line {
 		panic(err)
 	}
 	return line
+}
+
+// Scatter makes a sactter plot of the two vectors
+func Scatter(x, y []float64) (*plotter.Scatter, error) {
+	if len(x) != len(y) {
+		panic("quickplot: slice length mismatch")
+	}
+	pts := make(plotter.XYs, len(x))
+	for i := range pts {
+		pts[i].X = x[i]
+		pts[i].Y = y[i]
+	}
+	return plotter.NewScatter(pts)
+}
+
+func Contour(x, y, z []float64) (*myplot.ColoredScatter, error) {
+	if len(x) != len(y) {
+		panic("quickplot: slice length mismatch")
+	}
+	if len(y) != len(z) {
+		panic("quickplot: slice length mismatch")
+	}
+	pts := make(plotter.XYZs, len(x))
+	for i, v := range x {
+		pts[i].X = v
+		pts[i].Y = y[i]
+		pts[i].Z = z[i]
+	}
+	return myplot.NewColoredScatter(pts)
 }
